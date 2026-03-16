@@ -1,0 +1,67 @@
+'use client'
+
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
+
+// Mock tool count distribution data derived from avg_tools
+const generateToolDistribution = () => {
+  // Based on avg_tools = 3.2 across 399 postings, approximate a distribution
+  return [
+    { tools: '1', count: 28 },
+    { tools: '2', count: 65 },
+    { tools: '3', count: 102 },
+    { tools: '4', count: 88 },
+    { tools: '5', count: 54 },
+    { tools: '6', count: 32 },
+    { tools: '7', count: 18 },
+    { tools: '8', count: 7 },
+    { tools: '9', count: 3 },
+    { tools: '10+', count: 2 },
+  ]
+}
+
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 12px' }}>
+        <p style={{ color: '#9CA3AF', fontSize: 12 }}>{label} tool{label !== '1' ? 's' : ''}</p>
+        <p style={{ color: '#E8653A', fontSize: 13 }}>{payload[0].value} postings</p>
+      </div>
+    )
+  }
+  return null
+}
+
+export function ToolDistribution() {
+  const data = generateToolDistribution()
+  const max = Math.max(...data.map((d) => d.count))
+
+  return (
+    <div
+      className="rounded-card p-6"
+      style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}
+    >
+      <h2 className="text-xl mb-2" style={{ fontFamily: 'var(--font-instrument-serif)', color: '#F5F5F5' }}>
+        Tool Count Distribution
+      </h2>
+      <p className="text-sm mb-6" style={{ color: '#9CA3AF' }}>
+        Number of distinct tools required per role
+      </p>
+      <ResponsiveContainer width="100%" height={240}>
+        <BarChart data={data} barCategoryGap="30%">
+          <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
+          <XAxis dataKey="tools" tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={false} tickLine={false} />
+          <Tooltip content={<CustomTooltip />} />
+          <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+            {data.map((entry) => (
+              <Cell
+                key={entry.tools}
+                fill={entry.count === max ? '#E8653A' : `rgba(232,101,58,${0.3 + (entry.count / max) * 0.5})`}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
