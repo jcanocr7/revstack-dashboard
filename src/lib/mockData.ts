@@ -51,6 +51,20 @@ export interface ToolDistRow {
   count: number
 }
 
+export interface TreemapLeaf {
+  name: string
+  size: number
+  fs: number
+  uj: number
+  tools: number
+  stage?: string
+}
+
+export interface TreemapGroup {
+  name: string
+  children: TreemapLeaf[]
+}
+
 export interface DashboardData {
   overview: Overview
   regions: RegionData[]
@@ -110,3 +124,51 @@ export const MOCK_DATA: DashboardData = {
   ],
   toolDistribution: [],
 }
+
+export const TREEMAP_DATA: TreemapGroup[] = [
+  {
+    name: 'US',
+    children: [
+      { name: 'Amazon', size: 9, fs: 60, uj: 70, tools: 5, stage: 'public' },
+      { name: 'AWS', size: 7, fs: 62, uj: 72, tools: 6, stage: 'public' },
+      { name: 'Iterable', size: 7, fs: 55, uj: 65, tools: 4, stage: 'series_c' },
+      { name: 'JPMorganChase', size: 5, fs: 58, uj: 70, tools: 5, stage: 'public' },
+      { name: 'Google', size: 5, fs: 52, uj: 64, tools: 4, stage: 'public' },
+      { name: 'Deloitte', size: 5, fs: 56, uj: 68, tools: 4, stage: 'public' },
+      { name: 'Salesforce', size: 5, fs: 60, uj: 72, tools: 7, stage: 'public' },
+      { name: 'NTT DATA', size: 4, fs: 55, uj: 70, tools: 3, stage: 'public' },
+    ],
+  },
+  {
+    name: 'DACH',
+    children: [
+      { name: 'SAP', size: 4, fs: 50, uj: 58, tools: 4, stage: 'public' },
+      { name: 'Personio', size: 3, fs: 45, uj: 55, tools: 3, stage: 'series_e' },
+      { name: 'Celonis', size: 2, fs: 48, uj: 60, tools: 4, stage: 'growth' },
+      { name: 'Sennder', size: 2, fs: 42, uj: 52, tools: 3, stage: 'series_d' },
+    ],
+  },
+  {
+    name: 'UK',
+    children: [
+      { name: 'Revolut', size: 3, fs: 58, uj: 68, tools: 5, stage: 'growth' },
+      { name: 'Deliveroo', size: 2, fs: 55, uj: 62, tools: 4, stage: 'public' },
+      { name: 'Monzo', size: 2, fs: 50, uj: 58, tools: 3, stage: 'growth' },
+    ],
+  },
+  {
+    name: 'EU Remote',
+    children: [
+      { name: 'Remote.com', size: 3, fs: 48, uj: 60, tools: 4, stage: 'series_c' },
+      { name: 'Deel', size: 3, fs: 52, uj: 64, tools: 5, stage: 'growth' },
+      { name: 'Miro', size: 2, fs: 45, uj: 55, tools: 3, stage: 'series_c' },
+    ],
+  },
+  {
+    name: 'Staffing',
+    children: [
+      { name: 'Pinnacle Method', size: 11, fs: 58, uj: 68, tools: 4, stage: 'unknown' },
+      { name: 'Penske', size: 11, fs: 55, uj: 65, tools: 3, stage: 'public' },
+    ],
+  },
+]

@@ -6,14 +6,14 @@ const FS_COLORS: Record<string, string> = {
   high_risk: '#E24B4A',
   moderate_risk: '#EF9F27',
   low_risk: '#1D9E75',
-  minimal: '#4B4B4B',
+  minimal: '#3a3a3a',
 }
 
 const UJ_COLORS: Record<string, string> = {
   unicorn: '#D4537E',
   stretched: '#7F77DD',
   reasonable: '#85B7EB',
-  focused: '#4B4B4B',
+  focused: '#3a3a3a',
 }
 
 const FS_LABELS: Record<string, string> = {
@@ -40,11 +40,13 @@ function DonutChart({
   colors,
   labels,
   title,
+  label,
 }: {
   data: Record<string, number>
   colors: Record<string, string>
   labels: Record<string, string>
   title: string
+  label: string
 }) {
   const total = Object.values(data).reduce((a, b) => a + b, 0)
   const chartData = Object.entries(data).map(([key, value]) => ({
@@ -58,9 +60,9 @@ function DonutChart({
     if (active && payload && payload.length) {
       const item = payload[0]
       return (
-        <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 12px' }}>
-          <p style={{ color: '#F5F5F5', fontSize: 13 }}>{item.name}</p>
-          <p style={{ color: '#9CA3AF', fontSize: 12 }}>{item.value} postings ({item.payload.pct}%)</p>
+        <div style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '8px 12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+          <p style={{ color: '#F5F0EB', fontSize: 13 }}>{item.name}</p>
+          <p style={{ color: '#8A8580', fontSize: 12 }}>{item.value} postings ({item.payload.pct}%)</p>
         </div>
       )
     }
@@ -69,8 +71,9 @@ function DonutChart({
 
   return (
     <div>
-      <h3 className="text-lg mb-4 font-medium" style={{ fontFamily: 'var(--font-instrument-serif)', color: '#F5F5F5' }}>
-        {title}
+      <span className="section-label">{label}</span>
+      <h3 className="section-title" style={{ fontSize: 20, marginBottom: 16 }}>
+        {title.split(' ')[0]} <em>{title.split(' ').slice(1).join(' ')}</em>
       </h3>
       <ResponsiveContainer width="100%" height={200}>
         <PieChart>
@@ -87,9 +90,9 @@ function DonutChart({
           <div key={item.key} className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: colors[item.key] }} />
-              <span style={{ color: '#9CA3AF' }}>{item.name}</span>
+              <span style={{ color: '#8A8580' }}>{item.name}</span>
             </div>
-            <span style={{ color: '#F5F5F5' }}>{item.pct}%</span>
+            <span style={{ color: '#F5F0EB' }}>{item.pct}%</span>
           </div>
         ))}
       </div>
@@ -99,16 +102,15 @@ function DonutChart({
 
 export function ScoreTiers({ tiers }: { tiers: TierData }) {
   return (
-    <div
-      className="rounded-card p-6"
-      style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}
-    >
-      <h2 className="text-xl mb-6" style={{ fontFamily: 'var(--font-instrument-serif)', color: '#F5F5F5' }}>
-        Score Tier Distributions
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <DonutChart data={tiers.fs} colors={FS_COLORS} labels={FS_LABELS} title="Franken-Stack Risk" />
-        <DonutChart data={tiers.uj} colors={UJ_COLORS} labels={UJ_LABELS} title="Unicorn JD Index" />
+    <div className="card p-6 md:p-8">
+      <span className="section-label">Risk Analysis</span>
+      <h2 className="section-title">Score Tier <em>Distributions</em></h2>
+      <p className="text-sm mb-8" style={{ color: '#8A8580' }}>
+        How postings break down by complexity and requirement tiers
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <DonutChart data={tiers.fs} colors={FS_COLORS} labels={FS_LABELS} title="Franken-Stack Risk" label="STACK COMPLEXITY" />
+        <DonutChart data={tiers.uj} colors={UJ_COLORS} labels={UJ_LABELS} title="Unicorn JD Index" label="REQUIREMENT LOAD" />
       </div>
     </div>
   )

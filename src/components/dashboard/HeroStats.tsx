@@ -48,28 +48,32 @@ export function HeroStats({ totalPostings, avgFs, avgUj, avgTools }: HeroStatsPr
   const metrics = [
     {
       label: 'Postings Analyzed',
-      value: <AnimatedNumber value={totalPostings} />,
+      rawValue: totalPostings,
+      decimals: 0,
       suffix: '',
       sub: 'RevOps job postings',
       color: '#E8653A',
     },
     {
-      label: 'Avg Franken-Stack Score',
-      value: <AnimatedNumber value={avgFs} decimals={1} />,
+      label: 'Avg Franken-Stack',
+      rawValue: avgFs,
+      decimals: 1,
       suffix: '/100',
       sub: 'Tool complexity risk',
       color: fsColor(avgFs),
     },
     {
-      label: 'Avg Unicorn JD Score',
-      value: <AnimatedNumber value={avgUj} decimals={1} />,
+      label: 'Avg Unicorn JD',
+      rawValue: avgUj,
+      decimals: 1,
       suffix: '/100',
       sub: 'Requirement overload',
       color: ujColor(avgUj),
     },
     {
-      label: 'Avg Tools per Role',
-      value: <AnimatedNumber value={avgTools} decimals={1} />,
+      label: 'Avg Tools / Role',
+      rawValue: avgTools,
+      decimals: 1,
       suffix: '',
       sub: 'Distinct tools required',
       color: '#1D9E75',
@@ -78,23 +82,20 @@ export function HeroStats({ totalPostings, avgFs, avgUj, avgTools }: HeroStatsPr
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {metrics.map((m) => (
+      {metrics.map((m, i) => (
         <div
           key={m.label}
-          className="rounded-card p-6"
-          style={{
-            background: '#141414',
-            border: '1px solid rgba(255,255,255,0.06)',
-          }}
+          className="card p-6 fade-up"
+          style={{ animationDelay: `${i * 0.08}s` }}
         >
-          <p className="text-sm font-medium mb-3" style={{ color: '#9CA3AF' }}>
+          <p className="text-xs font-medium mb-3 uppercase tracking-wider" style={{ color: '#8A8580', letterSpacing: '0.08em' }}>
             {m.label}
           </p>
           <p className="text-4xl font-semibold mb-1" style={{ color: m.color, fontFamily: 'var(--font-instrument-serif)' }}>
-            <AnimatedNumber value={m.label === 'Postings Analyzed' ? totalPostings : m.label === 'Avg Franken-Stack Score' ? avgFs : m.label === 'Avg Unicorn JD Score' ? avgUj : avgTools} decimals={m.label === 'Postings Analyzed' ? 0 : 1} />
-            <span className="text-xl ml-1" style={{ color: '#9CA3AF' }}>{m.suffix}</span>
+            <AnimatedNumber value={m.rawValue} decimals={m.decimals} />
+            {m.suffix && <span className="text-xl ml-1" style={{ color: '#5A5550' }}>{m.suffix}</span>}
           </p>
-          <p className="text-xs" style={{ color: '#6B7280' }}>{m.sub}</p>
+          <p className="text-xs" style={{ color: '#5A5550' }}>{m.sub}</p>
         </div>
       ))}
     </div>

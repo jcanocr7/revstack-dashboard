@@ -1,12 +1,15 @@
 import { supabase } from '@/lib/supabase'
-import { MOCK_DATA, type DashboardData } from '@/lib/mockData'
+import { MOCK_DATA, TREEMAP_DATA, type DashboardData } from '@/lib/mockData'
 import { HeroStats } from '@/components/dashboard/HeroStats'
+import { JobTreemap } from '@/components/dashboard/JobTreemap'
 import { ScoreTiers } from '@/components/dashboard/ScoreTiers'
 import { RegionalChart } from '@/components/dashboard/RegionalChart'
 import { PolicySeniority } from '@/components/dashboard/PolicySeniority'
 import { ToolDistribution } from '@/components/dashboard/ToolDistribution'
 import { CompanyTable } from '@/components/dashboard/CompanyTable'
 import { DashboardFooter } from '@/components/dashboard/DashboardFooter'
+import { ToolTicker } from '@/components/dashboard/ToolTicker'
+import { DashboardNav } from '@/components/dashboard/DashboardNav'
 
 async function getDashboardData(): Promise<DashboardData> {
   try {
@@ -30,7 +33,6 @@ async function getDashboardData(): Promise<DashboardData> {
 
     if (!overviewRes.data) throw new Error('No overview data from Supabase')
 
-    // Aggregate score_tiers cross-tab into fs and uj totals
     const tierRows = tiersRes.data || []
     const fsTiers: Record<string, number> = {}
     const ujTiers: Record<string, number> = {}
@@ -39,7 +41,6 @@ async function getDashboardData(): Promise<DashboardData> {
       ujTiers[row.uj_tier] = (ujTiers[row.uj_tier] || 0) + Number(row.count)
     }
 
-    // Aggregate remote by policy (view has per-region rows)
     const remoteRows = remoteRes.data || []
     const remoteTotals: Record<string, number> = {}
     for (const row of remoteRows) {
@@ -99,66 +100,141 @@ export default async function DashboardPage() {
   const { overview, regions, tiers, seniority, remote, companies, toolDistribution } = data
 
   return (
-    <main className="min-h-screen" style={{ background: '#0A0A0A' }}>
-      {/* Top nav */}
-      <header
-        className="sticky top-0 z-10 px-6 py-4"
-        style={{
-          background: 'rgba(10,10,10,0.85)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-        }}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl" style={{ fontFamily: 'var(--font-instrument-serif)', color: '#F5F5F5' }}>
-              RevStack
-            </span>
-            <span
-              className="text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ background: 'rgba(232,101,58,0.15)', color: '#E8653A' }}
-            >
-              Intelligence
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#1D9E75' }} />
-            <span className="text-xs" style={{ color: '#9CA3AF' }}>Live data</span>
-          </div>
-        </div>
-      </header>
+    <main style={{ background: '#0A0A0A', minHeight: '100vh' }}>
+
+      {/* Nav */}
+      <DashboardNav />
+
+      {/* Tool Ticker */}
+      <div style={{ paddingTop: 68 }}>
+        <ToolTicker />
+      </div>
 
       {/* Page content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
-        <div className="mb-10">
-          <h1
-            className="text-4xl md:text-5xl mb-3"
-            style={{ fontFamily: 'var(--font-instrument-serif)', color: '#F5F5F5' }}
-          >
-            RevOps Job Market Intelligence
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 48px' }}>
+
+        {/* Page header with ambient glow */}
+        <div style={{ position: 'relative', marginBottom: 64 }}>
+          {/* Ambient glow */}
+          <div style={{
+            position: 'absolute',
+            top: -100,
+            right: -200,
+            width: 800,
+            height: 800,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(232,101,58,0.08) 0%, transparent 70%)',
+            pointerEvents: 'none',
+            animation: 'pulseGlow 4s ease-in-out infinite',
+          }} />
+
+          <span className="fade-up" style={{ animationDelay: '0s', display: 'block', fontSize: 11, fontWeight: 500, color: '#E8653A', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 20 }}>
+            Live Intelligence
+          </span>
+          <h1 className="fade-up" style={{
+            animationDelay: '0.1s',
+            fontFamily: 'var(--font-instrument-serif)',
+            fontSize: 'clamp(36px, 4.5vw, 56px)',
+            fontWeight: 400,
+            lineHeight: 1.12,
+            letterSpacing: '-0.025em',
+            color: '#F5F0EB',
+            marginBottom: 20,
+          }}>
+            RevOps Job Market <em style={{ color: '#E8653A', fontStyle: 'italic' }}>Intelligence</em>
           </h1>
-          <p className="text-base max-w-2xl" style={{ color: '#9CA3AF' }}>
-            Real-time analysis of tool complexity, requirement overload, and hiring patterns across{' '}
-            {overview.total_postings.toLocaleString()} RevOps postings worldwide.
+          <p className="fade-up" style={{
+            animationDelay: '0.2s',
+            fontSize: 18,
+            color: '#8A8580',
+            maxWidth: 560,
+            lineHeight: 1.65,
+            fontWeight: 300,
+            marginBottom: 40,
+          }}>
+            Real-time analysis of tool complexity, requirement overload, and hiring patterns across {overview.total_postings.toLocaleString()} RevOps postings worldwide.
           </p>
+
+          {/* Proof bar */}
+          <div className="fade-up" style={{
+            animationDelay: '0.3s',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 0,
+          }}>
+            {[
+              { num: overview.total_postings.toLocaleString(), label: 'Postings analyzed' },
+              { num: '4', label: 'Regions tracked' },
+              { num: overview.avg_tools.toFixed(1), label: 'Avg tools per role' },
+              { num: '€0', label: 'Vendor bias' },
+            ].map((stat, i, arr) => (
+              <div key={stat.label} style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ padding: '0 24px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: '#F5F0EB', fontFamily: 'var(--font-dm-sans)', lineHeight: 1.2 }}>
+                    {stat.num}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#5A5550', marginTop: 2 }}>
+                    {stat.label}
+                  </div>
+                </div>
+                {i < arr.length - 1 && (
+                  <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.06)' }} />
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
-        <HeroStats
-          totalPostings={overview.total_postings}
-          avgFs={overview.avg_fs}
-          avgUj={overview.avg_uj}
-          avgTools={overview.avg_tools}
-        />
-        <ScoreTiers tiers={tiers} />
-        <RegionalChart regions={regions} />
-        <PolicySeniority remote={remote} seniority={seniority} />
-        <ToolDistribution liveData={toolDistribution} />
-        <CompanyTable companies={companies} />
-        <DashboardFooter
-          lastUpdated={overview.last_updated}
-          totalPostings={overview.total_postings}
-          regionCount={regions.length}
-        />
+        {/* Dashboard sections */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+          {/* 1. Hero stats */}
+          <HeroStats
+            totalPostings={overview.total_postings}
+            avgFs={overview.avg_fs}
+            avgUj={overview.avg_uj}
+            avgTools={overview.avg_tools}
+          />
+
+          {/* 2. Treemap — centerpiece */}
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 700,
+              height: 700,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(232,101,58,0.05) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+            <JobTreemap data={TREEMAP_DATA} />
+          </div>
+
+          {/* 3. Score tiers */}
+          <ScoreTiers tiers={tiers} />
+
+          {/* 4. Regional */}
+          <RegionalChart regions={regions} />
+
+          {/* 5. Remote + seniority */}
+          <PolicySeniority remote={remote} seniority={seniority} />
+
+          {/* 6. Tool distribution */}
+          <ToolDistribution liveData={toolDistribution} />
+
+          {/* 7. Company leaderboard */}
+          <CompanyTable companies={companies} />
+
+          {/* Footer */}
+          <DashboardFooter
+            lastUpdated={overview.last_updated}
+            totalPostings={overview.total_postings}
+            regionCount={regions.length}
+          />
+        </div>
       </div>
     </main>
   )

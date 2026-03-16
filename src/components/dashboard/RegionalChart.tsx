@@ -23,8 +23,8 @@ interface RegionData {
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number; color: string }>; label?: string }) => {
   if (active && payload && payload.length) {
     return (
-      <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px', minWidth: 160 }}>
-        <p style={{ color: '#F5F5F5', fontSize: 13, marginBottom: 6 }}>{label}</p>
+      <div style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 14px', minWidth: 160, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+        <p style={{ color: '#F5F0EB', fontSize: 13, marginBottom: 6 }}>{label}</p>
         {payload.map((p) => (
           <p key={p.name} style={{ color: p.color, fontSize: 12, marginBottom: 2 }}>
             {p.name}: {p.name === 'Avg Tools ×10' ? (p.value / 10).toFixed(1) : p.value}
@@ -45,14 +45,10 @@ export function RegionalChart({ regions }: { regions: RegionData[] }) {
   }))
 
   return (
-    <div
-      className="rounded-card p-6"
-      style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}
-    >
-      <h2 className="text-xl mb-2" style={{ fontFamily: 'var(--font-instrument-serif)', color: '#F5F5F5' }}>
-        Regional Comparison
-      </h2>
-      <p className="text-sm mb-6" style={{ color: '#9CA3AF' }}>
+    <div className="card p-6 md:p-8">
+      <span className="section-label">Geography</span>
+      <h2 className="section-title">Regional <em>Comparison</em></h2>
+      <p className="text-sm mb-8" style={{ color: '#8A8580' }}>
         Avg scores by region — tools scaled ×10 for readability
       </p>
       <ResponsiveContainer width="100%" height={300}>
@@ -60,20 +56,20 @@ export function RegionalChart({ regions }: { regions: RegionData[] }) {
           <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
           <XAxis
             dataKey="name"
-            tick={{ fill: '#9CA3AF', fontSize: 12 }}
+            tick={{ fill: '#8A8580', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: '#9CA3AF', fontSize: 12 }}
+            tick={{ fill: '#8A8580', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
             domain={[0, 100]}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
-            wrapperStyle={{ paddingTop: 16, fontSize: 12, color: '#9CA3AF' }}
-            formatter={(value) => <span style={{ color: '#9CA3AF' }}>{value}</span>}
+            wrapperStyle={{ paddingTop: 16, fontSize: 12 }}
+            formatter={(value) => <span style={{ color: '#8A8580' }}>{value}</span>}
           />
           <Bar dataKey="Franken-Stack" fill="#E8653A" radius={[4, 4, 0, 0]} />
           <Bar dataKey="Unicorn JD" fill="#7F77DD" radius={[4, 4, 0, 0]} />
