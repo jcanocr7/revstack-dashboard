@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase'
+import { MOCK_DATA, type DashboardData } from '@/lib/mockData'
 import { HeroStats } from '@/components/dashboard/HeroStats'
 import { ScoreTiers } from '@/components/dashboard/ScoreTiers'
 import { RegionalChart } from '@/components/dashboard/RegionalChart'
@@ -5,18 +7,89 @@ import { PolicySeniority } from '@/components/dashboard/PolicySeniority'
 import { ToolDistribution } from '@/components/dashboard/ToolDistribution'
 import { CompanyTable } from '@/components/dashboard/CompanyTable'
 import { DashboardFooter } from '@/components/dashboard/DashboardFooter'
-import { MOCK_DATA } from '@/lib/mockData'
 
-async function getDashboardData() {
+async function getDashboardData(): Promise<DashboardData> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/dashboard`, {
-      next: { revalidate: 3600 },
-    })
-    if (!res.ok) throw new Error('API returned non-OK')
-    return res.json()
+    const [
+      overviewRes,
+      regionsRes,
+      seniorityRes,
+      remoteRes,
+      companiesRes,
+      tiersRes,
+      toolDistRes,
+    ] = await Promise.all([
+      supabase.from('mv_dashboard_overview').select('*').single(),
+      supabase.from('mv_dashboard_regions').select('*'),
+      supabase.from('mv_dashboard_seniority').select('*'),
+      supabase.from('mv_dashboard_remote').select('*'),
+      supabase.from('mv_dashboard_companies').select('*').order('posting_count', { ascending: false }).limit(15),
+      supabase.from('mv_dashboard_score_tiers').select('*'),
+      supabase.rpc('get_tool_distribution'),
+    ])
+
+    if (!overviewRes.data) throw new Error('No overview data from Supabase')
+
+    // Aggregate score_tiers cross-tab into fs and uj totals
+    const tierRows = tiersRes.data || []
+    const fsTiers: Record<string, number> = {}
+    const ujTiers: Record<string, number> = {}
+    for (const row of tierRows) {
+      fsTiers[row.fs_tier] = (fsTiers[row.fs_tier] || 0) + Number(row.count)
+      ujTiers[row.uj_tier] = (ujTiers[row.uj_tier] || 0) + Number(row.count)
+    }
+
+    // Aggregate remote by policy (view has per-region rows)
+    const remoteRows = remoteRes.data || []
+    const remoteTotals: Record<string, number> = {}
+    for (const row of remoteRows) {
+      remoteTotals[row.remote_policy] = (remoteTotals[row.remote_policy] || 0) + Number(row.posting_count)
+    }
+
+    return {
+      overview: {
+        ...overviewRes.data,
+        avg_fs: parseFloat(overviewRes.data.avg_fs),
+        avg_uj: parseFloat(overviewRes.data.avg_uj),
+        avg_tools: parseFloat(overviewRes.data.avg_tools),
+        avg_skill_cats: parseFloat(overviewRes.data.avg_skill_cats),
+      },
+      regions: (regionsRes.data || []).map((r) => ({
+        region: r.region,
+        posting_count: r.posting_count,
+        avg_fs: parseFloat(r.avg_fs),
+        avg_uj: parseFloat(r.avg_uj),
+        avg_tools: parseFloat(r.avg_tools),
+        avg_salary_max: r.avg_salary_max ? parseFloat(r.avg_salary_max) : null,
+      })),
+      seniority: (seniorityRes.data || []).map((r) => ({
+        seniority: r.seniority,
+        posting_count: r.posting_count,
+        avg_fs: parseFloat(r.avg_fs),
+        avg_uj: parseFloat(r.avg_uj),
+        avg_tools: parseFloat(r.avg_tools),
+      })),
+      remote: Object.entries(remoteTotals).map(([remote_policy, posting_count]) => ({
+        remote_policy,
+        posting_count,
+      })),
+      companies: (companiesRes.data || []).map((r) => ({
+        company_name: r.company_name,
+        company_industry: r.company_industry ?? null,
+        company_stage: r.company_stage ?? null,
+        posting_count: r.posting_count,
+        avg_fs: parseFloat(r.avg_fs),
+        avg_uj: parseFloat(r.avg_uj),
+        avg_tools: parseFloat(r.avg_tools),
+      })),
+      tiers: { fs: fsTiers, uj: ujTiers },
+      toolDistribution: (toolDistRes.data || []).map((r: { tool_count_bucket: string; count: number }) => ({
+        tool_count_bucket: r.tool_count_bucket,
+        count: Number(r.count),
+      })),
+    }
   } catch (err) {
-    console.error('Failed to fetch live data, falling back to mock:', err)
+    console.error('Supabase fetch failed, using mock data:', err)
     return MOCK_DATA
   }
 }
@@ -38,10 +111,7 @@ export default async function DashboardPage() {
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span
-              className="text-xl"
-              style={{ fontFamily: 'var(--font-instrument-serif)', color: '#F5F5F5' }}
-            >
+            <span className="text-xl" style={{ fontFamily: 'var(--font-instrument-serif)', color: '#F5F5F5' }}>
               RevStack
             </span>
             <span
@@ -60,7 +130,6 @@ export default async function DashboardPage() {
 
       {/* Page content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
-        {/* Page heading */}
         <div className="mb-10">
           <h1
             className="text-4xl md:text-5xl mb-3"
@@ -74,30 +143,17 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {/* 1. Hero stats */}
         <HeroStats
           totalPostings={overview.total_postings}
           avgFs={overview.avg_fs}
           avgUj={overview.avg_uj}
           avgTools={overview.avg_tools}
         />
-
-        {/* 2. Score tier distributions */}
         <ScoreTiers tiers={tiers} />
-
-        {/* 3. Regional comparison */}
         <RegionalChart regions={regions} />
-
-        {/* 4. Remote policy + seniority */}
         <PolicySeniority remote={remote} seniority={seniority} />
-
-        {/* 5. Tool count distribution */}
         <ToolDistribution liveData={toolDistribution} />
-
-        {/* 6. Company leaderboard */}
         <CompanyTable companies={companies} />
-
-        {/* 7. Footer */}
         <DashboardFooter
           lastUpdated={overview.last_updated}
           totalPostings={overview.total_postings}

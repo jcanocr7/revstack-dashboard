@@ -17,7 +17,7 @@ interface RegionData {
   avg_fs: number
   avg_uj: number
   avg_tools: number
-  avg_salary_max?: number
+  avg_salary_max?: number | null
 }
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number; color: string }>; label?: string }) => {

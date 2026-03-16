@@ -4,8 +4,8 @@ import { useState } from 'react'
 
 interface CompanyData {
   company_name: string
-  company_industry?: string
-  company_stage?: string
+  company_industry?: string | null
+  company_stage?: string | null
   posting_count: number
   avg_fs: number
   avg_uj: number

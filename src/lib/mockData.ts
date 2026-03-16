@@ -1,4 +1,67 @@
-export const MOCK_DATA = {
+export interface Overview {
+  total_postings: number
+  avg_fs: number
+  avg_uj: number
+  avg_tools: number
+  avg_skill_cats: number
+  high_risk_count: number
+  unicorn_count: number
+  last_updated: string
+}
+
+export interface RegionData {
+  region: string
+  posting_count: number
+  avg_fs: number
+  avg_uj: number
+  avg_tools: number
+  avg_salary_max?: number | null
+}
+
+export interface SeniorityData {
+  seniority: string
+  posting_count: number
+  avg_fs: number
+  avg_uj: number
+  avg_tools: number
+}
+
+export interface RemoteData {
+  remote_policy: string
+  posting_count: number
+}
+
+export interface CompanyData {
+  company_name: string
+  company_industry?: string | null
+  company_stage?: string | null
+  posting_count: number
+  avg_fs: number
+  avg_uj: number
+  avg_tools: number
+}
+
+export interface TierCounts {
+  fs: Record<string, number>
+  uj: Record<string, number>
+}
+
+export interface ToolDistRow {
+  tool_count_bucket: string
+  count: number
+}
+
+export interface DashboardData {
+  overview: Overview
+  regions: RegionData[]
+  seniority: SeniorityData[]
+  remote: RemoteData[]
+  companies: CompanyData[]
+  tiers: TierCounts
+  toolDistribution: ToolDistRow[]
+}
+
+export const MOCK_DATA: DashboardData = {
   overview: {
     total_postings: 399,
     avg_fs: 53.2,
@@ -45,6 +108,5 @@ export const MOCK_DATA = {
     { company_name: 'Salesforce', company_industry: 'Software Development', posting_count: 5, avg_fs: 60, avg_uj: 72, avg_tools: 7 },
     { company_name: 'NTT DATA', company_industry: 'IT Services', posting_count: 4, avg_fs: 55, avg_uj: 70, avg_tools: 3 },
   ],
+  toolDistribution: [],
 }
-
-export type DashboardData = typeof MOCK_DATA
