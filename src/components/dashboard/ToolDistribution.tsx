@@ -2,21 +2,22 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
 
-// Mock tool count distribution data derived from avg_tools
-const generateToolDistribution = () => {
-  // Based on avg_tools = 3.2 across 399 postings, approximate a distribution
-  return [
-    { tools: '1', count: 28 },
-    { tools: '2', count: 65 },
-    { tools: '3', count: 102 },
-    { tools: '4', count: 88 },
-    { tools: '5', count: 54 },
-    { tools: '6', count: 32 },
-    { tools: '7', count: 18 },
-    { tools: '8', count: 7 },
-    { tools: '9', count: 3 },
-    { tools: '10+', count: 2 },
-  ]
+const MOCK_TOOL_DATA = [
+  { tools: '1', count: 28 },
+  { tools: '2', count: 65 },
+  { tools: '3', count: 102 },
+  { tools: '4', count: 88 },
+  { tools: '5', count: 54 },
+  { tools: '6', count: 32 },
+  { tools: '7', count: 18 },
+  { tools: '8', count: 7 },
+  { tools: '9', count: 3 },
+  { tools: '10+', count: 2 },
+]
+
+interface ToolDistRow {
+  tool_count_bucket: string
+  count: number
 }
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
@@ -31,8 +32,11 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   return null
 }
 
-export function ToolDistribution() {
-  const data = generateToolDistribution()
+export function ToolDistribution({ liveData }: { liveData?: ToolDistRow[] }) {
+  const data = liveData && liveData.length > 0
+    ? liveData.map((r) => ({ tools: r.tool_count_bucket, count: Number(r.count) }))
+    : MOCK_TOOL_DATA
+
   const max = Math.max(...data.map((d) => d.count))
 
   return (

@@ -8,16 +8,22 @@ import { DashboardFooter } from '@/components/dashboard/DashboardFooter'
 import { MOCK_DATA } from '@/lib/mockData'
 
 async function getDashboardData() {
-  // In production with env vars, fetch from API route:
-  // const res = await fetch(`${process.env.API_BASE_URL || ''}/api/dashboard`, { next: { revalidate: 3600 } })
-  // if (!res.ok) return MOCK_DATA
-  // return res.json()
-  return MOCK_DATA
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/dashboard`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) throw new Error('API returned non-OK')
+    return res.json()
+  } catch (err) {
+    console.error('Failed to fetch live data, falling back to mock:', err)
+    return MOCK_DATA
+  }
 }
 
 export default async function DashboardPage() {
   const data = await getDashboardData()
-  const { overview, regions, tiers, seniority, remote, companies } = data
+  const { overview, regions, tiers, seniority, remote, companies, toolDistribution } = data
 
   return (
     <main className="min-h-screen" style={{ background: '#0A0A0A' }}>
@@ -86,7 +92,7 @@ export default async function DashboardPage() {
         <PolicySeniority remote={remote} seniority={seniority} />
 
         {/* 5. Tool count distribution */}
-        <ToolDistribution />
+        <ToolDistribution liveData={toolDistribution} />
 
         {/* 6. Company leaderboard */}
         <CompanyTable companies={companies} />
