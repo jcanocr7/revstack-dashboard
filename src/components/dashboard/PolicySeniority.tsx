@@ -124,7 +124,7 @@ export function PolicySeniority({ remote, seniority }: { remote: RemoteData[]; s
               <YAxis
                 type="category"
                 dataKey="seniority"
-                tick={{ fill: '#9CA3AF', fontSize: 12, textTransform: 'capitalize' }}
+                tick={{ fill: '#9CA3AF', fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
                 width={50}
